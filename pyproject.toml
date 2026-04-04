@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "support-ticket-triage"
+version = "1.0.0"
+description = "Support Ticket Triage Environment"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi==0.104.1",
+    "uvicorn==0.24.0.post1",
+    "pydantic==2.5.2",
+    "requests==2.31.0",
+    "openai==1.3.9",
+    "python-dotenv==1.0.0",
+    "pyyaml==6.0",
+    "supabase==1.2.0",
+    "google-generativeai==0.3.1",
+    "httpx>=0.24.0,<0.24.2"
+]
