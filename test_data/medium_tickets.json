@@ -1,0 +1,122 @@
+[
+  {
+    "ticket_id": "MEDIUM001",
+    "customer_message": "The app is running slow. Some pages take like 5-10 seconds to load. It's annoying but I can still use it.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Acknowledge, ask for specific pages, escalate to performance team, don't dismiss"
+  },
+  {
+    "ticket_id": "MEDIUM002",
+    "customer_message": "I think there's a bug in how the discount code is calculated. It doesn't seem right, but I'm not 100% sure.",
+    "expected_decision": "needs_more_info",
+    "expected_team": "support",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Ask for specifics: which code, what did they expect vs what they got"
+  },
+  {
+    "ticket_id": "MEDIUM003",
+    "customer_message": "The export to CSV feature doesn't work. Wait, actually it does work, but it's very slow for large datasets (10k+ rows).",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Confirm it's a performance issue, escalate for optimization"
+  },
+  {
+    "ticket_id": "MEDIUM004",
+    "customer_message": "I'm getting a 'Connection Timeout' error when I try to upload files. It happens randomly, not always.",
+    "expected_decision": "needs_more_info",
+    "expected_team": "support",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Ask: file size, file type, network conditions, frequency"
+  },
+  {
+    "ticket_id": "MEDIUM005",
+    "customer_message": "The search function returns results, but sometimes the results are not relevant. Is this a bug?",
+    "expected_decision": "needs_more_info",
+    "expected_team": "support",
+    "expected_urgency": "low",
+    "response_quality_hint": "Ask for examples of bad results, clarify what they were searching for"
+  },
+  {
+    "ticket_id": "MEDIUM006",
+    "customer_message": "Premium users on my team can't access the new collaboration feature even though we paid for it.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "high",
+    "response_quality_hint": "Paying customers can't use paid feature = high priority, escalate immediately"
+  },
+  {
+    "ticket_id": "MEDIUM007",
+    "customer_message": "The UI feels cluttered. There are too many buttons and options. It's hard to find what I need.",
+    "expected_decision": "escalate",
+    "expected_team": "product",
+    "expected_urgency": "low",
+    "response_quality_hint": "Product/UX feedback, not a bug, route to product team"
+  },
+  {
+    "ticket_id": "MEDIUM008",
+    "customer_message": "I want to integrate with Slack. Do you support that? If not, can you add it?",
+    "expected_decision": "escalate",
+    "expected_team": "product",
+    "expected_urgency": "low",
+    "response_quality_hint": "Feature request, not a bug, escalate to product team"
+  },
+  {
+    "ticket_id": "MEDIUM009",
+    "customer_message": "The notification system seems broken. Sometimes I get notifications, sometimes I don't. Inconsistent.",
+    "expected_decision": "needs_more_info",
+    "expected_team": "support",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Ask: notification type, timing patterns, device info, notification settings"
+  },
+  {
+    "ticket_id": "MEDIUM010",
+    "customer_message": "I'm getting weird characters in my data after export. It looks like an encoding issue.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Likely a bug, ask for specific example, escalate to engineering"
+  },
+  {
+    "ticket_id": "MEDIUM011",
+    "customer_message": "The API rate limit is too restrictive for my use case. I'm hitting the limit after just a few minutes of normal usage.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Could be misconfiguration or legitimate need, escalate for review"
+  },
+  {
+    "ticket_id": "MEDIUM012",
+    "customer_message": "I think I accidentally deleted important data. Can you help me recover it? I'm not sure how it happened.",
+    "expected_decision": "escalate",
+    "expected_team": "support",
+    "expected_urgency": "high",
+    "response_quality_hint": "Data loss is serious, check if recovery is possible, escalate if needed"
+  },
+  {
+    "ticket_id": "MEDIUM013",
+    "customer_message": "The API documentation is wrong. The example code doesn't work as described.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "low",
+    "response_quality_hint": "Documentation/API issue, escalate to dev team"
+  },
+  {
+    "ticket_id": "MEDIUM014",
+    "customer_message": "I'm trying to use the new feature, but I don't see it in my account. Is it available for everyone?",
+    "expected_decision": "needs_more_info",
+    "expected_team": "support",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Ask: account type, region, when they signed up, if feature flag is on"
+  },
+  {
+    "ticket_id": "MEDIUM015",
+    "customer_message": "After the recent update, my custom settings are gone. I had to reconfigure everything.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Data loss in update is bad, escalate to investigate"
+  }
+]

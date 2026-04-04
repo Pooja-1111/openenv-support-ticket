@@ -1,0 +1,122 @@
+[
+  {
+    "ticket_id": "EASY001",
+    "customer_message": "I was charged twice for my monthly subscription. My account shows $200 instead of $100.",
+    "expected_decision": "escalate",
+    "expected_team": "billing",
+    "expected_urgency": "high",
+    "response_quality_hint": "Apologize, acknowledge the issue, promise immediate escalation"
+  },
+  {
+    "ticket_id": "EASY002",
+    "customer_message": "The app keeps crashing whenever I try to open the dashboard. It just closes immediately.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "high",
+    "response_quality_hint": "Acknowledge the crash, ask for details (OS, version), escalate to engineering"
+  },
+  {
+    "ticket_id": "EASY003",
+    "customer_message": "There's a typo in the FAQ section. It says 'recieve' instead of 'receive'.",
+    "expected_decision": "escalate",
+    "expected_team": "support",
+    "expected_urgency": "low",
+    "response_quality_hint": "Thank them for reporting, mention it will be fixed"
+  },
+  {
+    "ticket_id": "EASY004",
+    "customer_message": "My password reset email never arrived. I requested it 30 minutes ago and still nothing.",
+    "expected_decision": "resolve",
+    "expected_team": null,
+    "expected_urgency": "medium",
+    "response_quality_hint": "Offer to resend, ask to check spam, suggest password reset link directly"
+  },
+  {
+    "ticket_id": "EASY005",
+    "customer_message": "I can't log in. It says 'Invalid credentials' but I'm sure my password is correct.",
+    "expected_decision": "resolve",
+    "expected_team": null,
+    "expected_urgency": "high",
+    "response_quality_hint": "Suggest password reset, offer account recovery options"
+  },
+  {
+    "ticket_id": "EASY006",
+    "customer_message": "The login button on the homepage is broken. It doesn't respond when I click it.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "high",
+    "response_quality_hint": "Critical issue blocking access, escalate immediately to engineering"
+  },
+  {
+    "ticket_id": "EASY007",
+    "customer_message": "I need a refund. I paid $50 but didn't receive the product.",
+    "expected_decision": "escalate",
+    "expected_team": "billing",
+    "expected_urgency": "high",
+    "response_quality_hint": "Acknowledge, offer refund or replacement, escalate to billing team"
+  },
+  {
+    "ticket_id": "EASY008",
+    "customer_message": "The website is completely down. I get a white page when I try to access it.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "high",
+    "response_quality_hint": "Critical outage, immediate escalation to engineering/devops"
+  },
+  {
+    "ticket_id": "EASY009",
+    "customer_message": "How do I change my profile picture? I can't find the option.",
+    "expected_decision": "resolve",
+    "expected_team": null,
+    "expected_urgency": "low",
+    "response_quality_hint": "Provide step-by-step instructions, reference help docs"
+  },
+  {
+    "ticket_id": "EASY010",
+    "customer_message": "I want to delete my account and all my data.",
+    "expected_decision": "needs_more_info",
+    "expected_team": "support",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Ask for confirmation, explain data deletion process, may need compliance team"
+  },
+  {
+    "ticket_id": "EASY011",
+    "customer_message": "Your competitor's product is cheaper. Why should I stay?",
+    "expected_decision": "escalate",
+    "expected_team": "support",
+    "expected_urgency": "high",
+    "response_quality_hint": "Acknowledge concern, highlight value, may need to involve sales/retention"
+  },
+  {
+    "ticket_id": "EASY012",
+    "customer_message": "I received a suspicious email from support@yourapp.com asking for my password. Is this legitimate?",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "high",
+    "response_quality_hint": "Warn them we never ask for passwords, escalate to security team"
+  },
+  {
+    "ticket_id": "EASY013",
+    "customer_message": "The mobile app won't sync my data with the web version.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Escalate to engineering, ask for device info"
+  },
+  {
+    "ticket_id": "EASY014",
+    "customer_message": "I was overcharged by $25 last month. Can you refund the difference?",
+    "expected_decision": "escalate",
+    "expected_team": "billing",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Apologize for overcharge, confirm details, escalate to billing"
+  },
+  {
+    "ticket_id": "EASY015",
+    "customer_message": "Your documentation is confusing and outdated. Please update it.",
+    "expected_decision": "escalate",
+    "expected_team": "support",
+    "expected_urgency": "low",
+    "response_quality_hint": "Thank them, acknowledge, route to docs team or support"
+  }
+]

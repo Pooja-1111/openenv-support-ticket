@@ -1,0 +1,82 @@
+[
+  {
+    "ticket_id": "HARD001",
+    "customer_message": "My data export worked fine yesterday, but today it's incomplete. Some records are missing from the CSV. I've tried multiple times.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "high",
+    "response_quality_hint": "Intermittent data loss is serious, ask for specifics (how many records, which export), escalate"
+  },
+  {
+    "ticket_id": "HARD002",
+    "customer_message": "I'm on a free plan and want to upgrade to premium. But I'm confused about the pricing. The website shows different prices in different places.",
+    "expected_decision": "escalate",
+    "expected_team": "support",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Sales/pricing issue, clarify pricing, potentially escalate to sales or billing"
+  },
+  {
+    "ticket_id": "HARD003",
+    "customer_message": "When I use the app on my iPhone with a slow internet connection, it crashes. But it works fine on WiFi. This is frustrating.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Network-dependent crash, could be timeout handling or mobile optimization issue"
+  },
+  {
+    "ticket_id": "HARD004",
+    "customer_message": "I requested access to the team collaboration feature 2 weeks ago. I still don't have it. Can you check what's happening?",
+    "expected_decision": "needs_more_info",
+    "expected_team": "support",
+    "expected_urgency": "high",
+    "response_quality_hint": "Delayed access is bad for paying customer, check status, escalate if stuck in queue"
+  },
+  {
+    "ticket_id": "HARD005",
+    "customer_message": "We're using your API to build an integration. Our tests pass locally but fail in production. Only happens with large datasets.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "high",
+    "response_quality_hint": "Production issue with customer integration, critical, escalate with request for details"
+  },
+  {
+    "ticket_id": "HARD006",
+    "customer_message": "The billing system shows I'm a free user, but I clearly paid for premium 3 months ago. I've been using premium features without them being activated properly.",
+    "expected_decision": "escalate",
+    "expected_team": "billing",
+    "expected_urgency": "high",
+    "response_quality_hint": "Billing sync issue affecting service, customer is upset, escalate to billing immediately"
+  },
+  {
+    "ticket_id": "HARD007",
+    "customer_message": "I'm trying to transfer my data to another account, but the transfer keeps timing out. I've tried 5 times now.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "medium",
+    "response_quality_hint": "Data transfer issue, could be size/timeout, ask for data size, escalate to engineering"
+  },
+  {
+    "ticket_id": "HARD008",
+    "customer_message": "Your system says I haven't paid my invoice, but I have proof of payment from 2 months ago. Why is this happening?",
+    "expected_decision": "escalate",
+    "expected_team": "billing",
+    "expected_urgency": "high",
+    "response_quality_hint": "Billing error causing service disruption, urgent, need to investigate payment sync"
+  },
+  {
+    "ticket_id": "HARD009",
+    "customer_message": "The Android app crashes on startup for me, but my colleague has the same device and version, and it works fine for them. Super weird.",
+    "expected_decision": "needs_more_info",
+    "expected_team": "engineering",
+    "expected_urgency": "high",
+    "response_quality_hint": "Device-specific crash, ask for detailed device info, app version, storage space, OS details"
+  },
+  {
+    "ticket_id": "HARD010",
+    "customer_message": "We switched to your plan last month. Everything worked great until yesterday. Now half my team can't access certain documents.",
+    "expected_decision": "escalate",
+    "expected_team": "engineering",
+    "expected_urgency": "high",
+    "response_quality_hint": "Regression affecting new customer, high priority, escalate to investigate recent changes"
+  }
+]

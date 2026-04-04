@@ -1,0 +1,113 @@
+name: support-ticket-triage
+version: "1.0.0"
+description: |
+  AI agent environment for customer support ticket triage and escalation.
+  The agent reads support tickets and decides how to route them (resolve locally, escalate to team, or ask for more info).
+
+tasks:
+  - name: easy
+    description: "Clear-cut support cases with obvious routing decisions (e.g., billing issue → billing team)"
+    difficulty: easy
+    expected_baseline_score: 0.85
+    
+  - name: medium
+    description: "Judgment calls requiring context and urgency assessment (e.g., slow app → is it critical?)"
+    difficulty: medium
+    expected_baseline_score: 0.75
+    
+  - name: hard
+    description: "Nuanced scenarios requiring deeper reasoning about complex issues"
+    difficulty: hard
+    expected_baseline_score: 0.65
+
+observation_space:
+  type: object
+  properties:
+    ticket_id:
+      type: string
+      description: "Unique identifier for the support ticket"
+    customer_message:
+      type: string
+      description: "The customer's problem description"
+    context:
+      type: string
+      description: "Optional additional context (account history, etc)"
+    is_followup:
+      type: boolean
+      description: "Whether this is a follow-up message in a conversation"
+
+action_space:
+  type: object
+  required:
+    - decision
+    - draft_response
+  properties:
+    decision:
+      type: string
+      enum: ["resolve", "escalate", "needs_more_info"]
+      description: "How to handle the ticket"
+    team:
+      type: string
+      enum: ["billing", "engineering", "support", "product", null]
+      description: "Which team to escalate to (if decision='escalate')"
+    urgency:
+      type: string
+      enum: ["low", "medium", "high"]
+      description: "Priority level of the issue"
+    draft_response:
+      type: string
+      description: "The response to send to the customer"
+    reasoning:
+      type: string
+      description: "Optional explanation of the decision"
+
+reward_space:
+  type: object
+  properties:
+    decision_correct:
+      type: number
+      minimum: 0.0
+      maximum: 1.0
+      description: "Whether the decision (resolve/escalate/needs_more_info) was correct"
+    team_correct:
+      type: number
+      minimum: 0.0
+      maximum: 1.0
+      description: "Whether the team selection was correct (if escalating)"
+    response_quality:
+      type: number
+      minimum: 0.0
+      maximum: 1.0
+      description: "Quality of the response to the customer (professionalism, clarity)"
+    overall_score:
+      type: number
+      minimum: 0.0
+      maximum: 1.0
+      description: "Weighted overall score for this action"
+
+endpoints:
+  reset:
+    description: "Initialize environment and get first observation"
+    method: POST
+    params:
+      task_type:
+        type: string
+        enum: ["easy", "medium", "hard"]
+        description: "Which difficulty level to run"
+    returns: observation
+  
+  step:
+    description: "Submit agent action and get reward + next observation"
+    method: POST
+    params:
+      action: action_space
+    returns:
+      reward: reward_space
+      observation: observation_space
+      done: boolean
+      info: object
+  
+  state:
+    description: "Get current environment state"
+    method: GET
+    returns: object

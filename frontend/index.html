@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SUPPORT_TICKETS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&amp;family=Manrope:wght@200;300;400;500;600;700;800&amp;family=Press+Start+2P&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-lowest": "#ffffff",
+                        "dark-surface-container-lowest": "#121212",
+                        "on-primary": "#ffefed",
+                        "secondary-fixed": "#fcd102",
+                        "tertiary-container": "#7afe7f",
+                        "dark-tertiary-container": "#004a11",
+                        "on-secondary": "#fff2d0",
+                        "on-tertiary": "#d1ffc9",
+                        "tertiary-dim": "#005d18",
+                        "on-background": "#4a2413",
+                        "surface-dim": "#ffc8b2",
+                        "secondary-container": "#fcd102",
+                        "primary-fixed": "#ff7767",
+                        "on-secondary-fixed-variant": "#635100",
+                        "surface-container-low": "#ffede7",
+                        "dark-surface-container-low": "#1a1a1a",
+                        "on-surface-variant": "#7f503b",
+                        "secondary-fixed-dim": "#ebc300",
+                        "tertiary-fixed-dim": "#6bef72",
+                        "error-container": "#fb5151",
+                        "inverse-on-surface": "#c99078",
+                        "on-secondary-container": "#584800",
+                        "on-surface": "#4a2413",
+                        "dark-on-surface": "#f1dfd8",
+                        "on-tertiary-fixed-variant": "#6b3c00",
+                        "primary": "#bb000a",
+                        "dark-primary": "#ffb4aa",
+                        "outline-variant": "#dba087",
+                        "on-error-container": "#570008",
+                        "surface-container": "#ffe2d7",
+                        "dark-surface-container": "#2c211d",
+                        "on-error": "#ffefee",
+                        "surface-variant": "#ffd4c2",
+                        "error-dim": "#9f0519",
+                        "on-secondary-fixed": "#423500",
+                        "on-primary-fixed": "#000000",
+                        "background": "#fff4f1",
+                        "dark-background": "#121212",
+                        "secondary": "#6e5a00",
+                        "dark-secondary": "#dbc66d",
+                        "tertiary": "#006b1c",
+                        "dark-tertiary": "#6bef72",
+                        "on-tertiary-container": "#006018",
+                        "primary-fixed-dim": "#ff5b4c",
+                        "surface-container-high": "#ffdbcd",
+                        "dark-surface-container-high": "#372b27",
+                        "surface-container-highest": "#ffd4c2",
+                        "dark-surface-container-highest": "#433632",
+                        "surface": "#fff4f1",
+                        "surface-bright": "#fff4f1",
+                        "primary-container": "#ff7767",
+                        "dark-primary-container": "#930005",
+                        "primary-dim": "#a40007",
+                        "outline": "#9e6b54",
+                        "inverse-surface": "#200600",
+                        "surface-tint": "#bb000a",
+                        "on-primary-fixed-variant": "#610002",
+                        "inverse-primary": "#ff5446",
+                        "error": "#b31b25",
+                        "on-tertiary-fixed": "#004a11",
+                        "secondary-dim": "#604e00",
+                        "tertiary-fixed": "#7afe7f"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Manrope"],
+                        "label": ["Space Grotesk"],
+                        "pixel": ["'Press Start 2P'", "cursive"]
+                    },
+                    borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .pixel-border {
+            box-shadow: 
+                0 -4px 0 0 var(--pixel-color, #4a2413),
+                0 4px 0 0 var(--pixel-color, #4a2413),
+                -4px 0 0 0 var(--pixel-color, #4a2413),
+                4px 0 0 0 var(--pixel-color, #4a2413);
+        }
+        .dark .pixel-border {
+            --pixel-color: #3d2b24;
+        }
+        .pixel-card-shadow {
+            box-shadow: 6px 6px 0px 0px rgba(74, 36, 19, 0.2);
+        }
+        .dark .pixel-card-shadow {
+            box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 0.4);
+        }
+        .brick-texture {
+            background-image: 
+                linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.05) 75%, rgba(0,0,0,0.05)), 
+                linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.05) 75%, rgba(0,0,0,0.05));
+            background-size: 16px 16px;
+            background-position: 0 0, 8px 8px;
+        }
+        .dark .brick-texture {
+            background-image: 
+                linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.03) 75%, rgba(255,255,255,0.03)), 
+                linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.03) 75%, rgba(255,255,255,0.03));
+        }
+        .step-end-transition {
+            transition-timing-function: step-end;
+        }
+        .image-render-pixel {
+            image-rendering: pixelated;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 0; }
+            20% { opacity: 1; }
+            100% { transform: translateY(-40px); opacity: 0; }
+        }
+        .feedback-float {
+            animation: floatUp 1s forwards;
+            pointer-events: none;
+        }
+
+        /* Parallax Clouds */
+        @keyframes drift {
+            from { background-position: 0 0; }
+            to { background-position: 100% 0; }
+        }
+        .cloud-bg {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            opacity: 0.05;
+            pointer-events: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect x="10" y="10" width="20" height="10" fill="white"/><rect x="20" y="5" width="20" height="15" fill="white"/><rect x="30" y="15" width="15" height="10" fill="white"/></svg>');
+            background-size: 200px 200px;
+            animation: drift 60s linear infinite;
+        }
+        .dark .cloud-bg {
+            opacity: 0.02;
+        }
+
+        /* Avatar Reactions */
+        @keyframes jump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .avatar-jump {
+            animation: jump 0.3s ease-in-out 2;
+        }
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+        .avatar-shake {
+            animation: shake 0.2s ease-in-out 3;
+            filter: grayscale(100%);
+        }
+
+        /* Streak Fire */
+        @keyframes flicker {
+            0%, 100% { box-shadow: 0 0 10px #ffbb00, 0 -5px 15px #ff5500; }
+            50% { box-shadow: 0 0 15px #ffcc00, 0 -10px 20px #ff0000; }
+        }
+        .on-fire {
+            animation: flicker 0.5s infinite alternate;
+            background: linear-gradient(to right, #ff5500, #ffbb00) !important;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background dark:bg-[#121212] font-body text-on-surface dark:text-[#f1dfd8] min-h-screen flex flex-col transition-colors duration-0 relative overflow-x-hidden min-w-[320px]" id="body-root">
+<div class="cloud-bg"></div>
+<!-- TopAppBar -->
+<header class="bg-[#fff4f1] dark:bg-[#121212] shadow-[0_4px_0_0_rgba(74,36,19,0.08)] dark:shadow-[0_4px_0_0_rgba(0,0,0,0.3)] sticky top-0 z-[100]">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#bb000a] dark:text-[#ffb4aa]" style="font-variation-settings: 'FILL' 1;">star</span>
+<h1 class="text-2xl font-black text-[#bb000a] dark:text-[#ffb4aa] tracking-tighter font-headline uppercase">SUPPORT_TICKETS</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 pixel-border bg-surface-container dark:bg-[#2c211d] hover:bg-surface-variant dark:hover:bg-[#433632] step-end-transition flex items-center justify-center text-primary dark:text-[#ffb4aa]" onclick="showLeaderboard()" title="Global Leaderboard">
+    <span class="material-symbols-outlined">leaderboard</span>
+</button>
+<button class="p-2 pixel-border bg-surface-container dark:bg-[#2c211d] hover:bg-surface-variant dark:hover:bg-[#433632] step-end-transition flex items-center justify-center text-secondary dark:text-secondary" onclick="showArchives()" title="Mission Archives">
+    <span class="material-symbols-outlined text-[18px]">bar_chart</span>
+</button>
+<button class="p-2 pixel-border bg-surface-container dark:bg-[#2c211d] hover:bg-surface-variant dark:hover:bg-[#433632] step-end-transition flex items-center justify-center" onclick="toggleTheme()">
+<span class="material-symbols-outlined dark:hidden">dark_mode</span>
+<span class="material-symbols-outlined hidden dark:block text-secondary-fixed">light_mode</span>
+</button>
+<button class="p-2 pixel-border bg-surface-container dark:bg-[#2c211d] hover:bg-surface-variant dark:hover:bg-[#433632] step-end-transition flex items-center justify-center text-secondary dark:text-secondary whitespace-nowrap" onclick="AudioEngine.toggleMute()" title="Toggle Sound">
+    <span class="material-symbols-outlined" id="mute-icon">volume_up</span>
+</button>
+<div class="bg-[#ffe2d7] dark:bg-[#372b27] px-4 py-1.5 translate-y-0.5 step-end-transition block">
+    <span class="font-pixel text-[10px] text-[#bb000a] dark:text-secondary" id="header-coin-display">COINS: 0</span>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-grow w-full max-w-4xl mx-auto px-4 py-8 space-y-8">
+<!-- Status & Profile Header -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Game Stats Card -->
+<div class="md:col-span-2 bg-surface-container-high dark:bg-[#433632] p-6 pixel-border relative overflow-hidden brick-texture">
+<div class="relative z-10 flex justify-between items-center">
+    <div class="space-y-1">
+        <p class="font-pixel text-[10px] text-secondary dark:text-secondary opacity-80" id="world-display">WORLD_1</p>
+        <h2 class="font-pixel text-xl text-primary dark:text-[#ffb4aa]" id="level-display">LEVEL_1</h2>
+    </div>
+    <div class="text-right space-y-2">
+        <p class="font-pixel text-[12px] dark:text-[#f1dfd8]" id="score-display">SCORE: 0</p>
+        <div class="flex gap-1 justify-end" id="hearts-container">
+            <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">favorite</span>
+            <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">favorite</span>
+            <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">favorite</span>
+        </div>
+    </div>
+</div>
+<!-- Career XP Bar -->
+<div class="relative z-10 mt-4">
+    <div class="flex justify-between items-end mb-1">
+        <p id="xp-text" class="font-pixel text-[8px] text-on-surface-variant dark:text-[#dba087]">CAREER XP: 0</p>
+        <p id="level-display-small" class="font-pixel text-[8px] text-primary dark:text-[#ffb4aa]">LVL 1</p>
+    </div>
+    <div class="h-3 bg-surface-container-low dark:bg-[#1a1a1a] pixel-border p-[2px]">
+        <div id="xp-fill" class="h-full bg-primary dark:bg-[#bb000a] shadow-[0_0_8px_rgba(187,0,10,0.4)] transition-all duration-500" style="width: 0%"></div>
+    </div>
+</div>
+</div>
+<!-- Profile Area -->
+<div class="relative group">
+<div class="bg-surface-container dark:bg-[#2c211d] p-4 pixel-border flex items-center gap-4 hover:bg-surface-variant dark:hover:bg-[#433632] transition-colors step-end-transition cursor-pointer" id="profile-display" onclick="document.getElementById('avatar-picker').classList.toggle('hidden')">
+<div class="w-16 h-16 bg-white dark:bg-stone-700 pixel-border flex-shrink-0 overflow-hidden relative">
+<img alt="Current Player Avatar" class="w-full h-full image-render-pixel dark:brightness-90 dark:contrast-110" id="current-avatar" src="assets/avatars/avatar1/screen.png"/>
+<div class="absolute bottom-0 right-0 bg-primary dark:bg-[#930005] p-0.5 leading-none">
+<span class="material-symbols-outlined text-white text-[12px]">edit</span>
+</div>
+</div>
+<div class="flex-grow overflow-hidden">
+    <p class="font-pixel text-[10px] text-on-surface dark:text-[#f1dfd8] uppercase tracking-wider truncate" id="display-player-name">MARIO_SUPPORT</p>
+</div>
+    </div>
+<!-- Avatar Picker correctly nested inside relative group -->
+<div class="hidden absolute top-full right-0 mt-2 w-64 bg-white dark:bg-[#2c211d] pixel-border z-50 p-4 shadow-xl" id="avatar-picker" style="transform-origin: top right;">
+<p class="font-pixel text-[10px] mb-4 text-center dark:text-[#f1dfd8]">SELECT_CHARACTER & NAME</p>
+<div class="grid grid-cols-2 gap-2">
+<button class="pixel-border hover:bg-primary-container p-1 bg-surface-container-low dark:bg-[#1a1a1a] transition-colors" onclick="selectAvatar(this.querySelector('img').src)">
+<img alt="Avatar 1" class="w-full aspect-square image-render-pixel" src="assets/avatars/avatar1/screen.png"/>
+</button>
+<button class="pixel-border hover:bg-primary-container p-1 bg-surface-container-low dark:bg-[#1a1a1a] transition-colors" onclick="selectAvatar(this.querySelector('img').src)">
+<img alt="Avatar 2" class="w-full aspect-square image-render-pixel" src="assets/avatars/avatar2/screen.png"/>
+</button>
+<button class="pixel-border hover:bg-primary-container p-1 bg-surface-container-low dark:bg-[#1a1a1a] transition-colors" onclick="selectAvatar(this.querySelector('img').src)">
+<img alt="Avatar 3" class="w-full aspect-square image-render-pixel" src="assets/avatars/avatar3/screen.png"/>
+</button>
+<button class="pixel-border hover:bg-primary-container p-1 bg-surface-container-low dark:bg-[#1a1a1a] transition-colors" onclick="selectAvatar(this.querySelector('img').src)">
+<img alt="Avatar 4" class="w-full aspect-square image-render-pixel" src="assets/avatars/avatar4/screen.png"/>
+</button>
+</div>
+<div class="mt-4">
+<input class="w-full bg-surface-container dark:bg-[#1a1a1a] pixel-border font-pixel text-[10px] p-2 focus:outline-none focus:ring-0 text-on-surface dark:text-[#f1dfd8]" id="name-input" placeholder="ENTER_NAME..." type="text" value="MARIO_SUPPORT"/>
+</div>
+<button class="w-full mt-4 bg-primary dark:bg-[#930005] text-white dark:text-[#f1dfd8] font-pixel text-[10px] py-2 pixel-border shadow-[0_4px_0_0_#610002] dark:shadow-[0_4px_0_0_#3d0001] active:translate-y-1 active:shadow-none transition-all" onclick="saveProfile()">SAVE_CHANGES</button>
+</div>
+</div>
+<!-- Red Alert Mode Toggle -->
+<div class="mt-4 bg-surface-container-low dark:bg-[#1a1a1a] p-3 pixel-border flex items-center justify-between">
+    <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-outline dark:text-[#dba087] text-lg" id="alert-icon">notifications_active</span>
+        <span class="font-pixel text-[8px] dark:text-[#f1dfd8]">RED ALERT MODE</span>
+    </div>
+    <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" id="red-alert-toggle" class="sr-only peer" onchange="toggleRedAlert()">
+        <div class="w-9 h-5 bg-outline/30 peer-focus:outline-none rounded-none pixel-border peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+    </label>
+</div>
+</div>
+
+</div>
+<!-- Ticket Area -->
+<div class="bg-white dark:bg-[#1a1a1a] p-6 md:p-8 pixel-border pixel-card-shadow relative transition-colors duration-0 min-h-[400px] flex flex-col justify-between" id="mission-card">
+    <!-- Timer Display -->
+    <div id="countdown-timer" class="hidden absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1 bg-primary text-white pixel-border z-20">
+        <span class="material-symbols-outlined text-[14px]">timer</span>
+        <span id="timer-text" class="font-pixel text-[10px]">45s</span>
+    </div>
+    <div class="absolute top-4 left-4 font-pixel text-[10px] text-outline dark:text-[#dba087]" id="ticket-id">TICKET #READY</div>
+<div class="absolute top-4 right-4">
+<span class="material-symbols-outlined text-secondary-fixed-dim dark:text-secondary-fixed" style="font-variation-settings: 'FILL' 1;">priority_high</span>
+</div>
+<div class="mt-8 text-center space-y-6">
+<h3 class="font-pixel text-lg md:text-2xl text-on-background dark:text-[#ffb4aa] leading-relaxed uppercase" id="ticket-title">
+                LOADING MISSION...
+            </h3>
+<div class="h-1 bg-surface-container dark:bg-[#433632] w-24 mx-auto"></div>
+<p class="font-body text-on-surface-variant dark:text-[#f1dfd8] max-w-md mx-auto text-sm" id="ticket-message">
+                Stand by for incoming triage data from the Cloud Fortress.
+            </p>
+</div>
+<!-- Mission Inputs -->
+<div class="mt-8 space-y-4">
+    <div>
+        <label class="font-pixel text-[10px] text-outline dark:text-[#dba087] block mb-2 uppercase">Draft_Response</label>
+        <textarea id="draft-input" class="w-full bg-surface-container-low dark:bg-[#1a1a1a] pixel-border font-body text-sm p-4 focus:outline-none focus:ring-0 text-on-surface dark:text-[#f1dfd8] min-h-[80px]" placeholder="Type your response to the customer..."></textarea>
+    </div>
+    <div>
+        <label class="font-pixel text-[10px] text-outline dark:text-[#dba087] block mb-2 uppercase">Reasoning</label>
+        <textarea id="reasoning-input" class="w-full bg-surface-container-low dark:bg-[#1a1a1a] pixel-border font-body text-sm p-4 focus:outline-none focus:ring-0 text-on-surface dark:text-[#f1dfd8] min-h-[60px]" placeholder="Explain your decision (e.g., Why this team? Why this urgency?)"></textarea>
+    </div>
+</div>
+
+<!-- Triage Buttons Row -->
+<div class="space-y-4 mt-8">
+    <div class="grid grid-cols-3 gap-4 relative">
+        <div id="feedback-layer" class="absolute inset-0 flex justify-center items-center pointer-events-none z-50"></div>
+        <button class="bg-tertiary dark:bg-[#008122] text-white dark:text-[#d1ffc9] font-pixel text-[10px] py-5 px-1 shadow-[0_5px_0_0_#004a11] dark:shadow-[0_5px_0_0_#002104] active:shadow-none active:translate-y-[5px] transition-all step-end-transition flex items-center justify-center text-center leading-none" onclick="handleAction('resolve')">
+            RESOLVE
+        </button>
+        <button class="bg-secondary-container dark:bg-secondary-container text-on-secondary-container font-pixel text-[10px] py-5 px-1 shadow-[0_5px_0_0_#635100] dark:shadow-[0_5px_0_0_#2c2400] active:shadow-none active:translate-y-[5px] transition-all step-end-transition flex items-center justify-center text-center leading-none" onclick="handleAction('needs_more_info')">
+            NEED INFO
+        </button>
+        <button class="bg-primary dark:bg-[#bb000a] text-white dark:text-on-primary font-pixel text-[10px] py-5 px-1 shadow-[0_5px_0_0_#610002] dark:shadow-[0_5px_0_0_#3d0001] active:shadow-none active:translate-y-[5px] transition-all step-end-transition flex items-center justify-center text-center leading-none" onclick="handleAction('escalate')">
+            ESCALATE
+        </button>
+    </div>
+
+    <!-- Power-Ups & Hint Area (Secondary Row) -->
+    <div class="grid grid-cols-3 gap-2 pt-4 border-t border-surface-container dark:border-[#433632]">
+        <button class="bg-[#6e5a00] dark:bg-[#121212] text-[#ffd4c2] dark:text-[#dba087] font-pixel text-[8px] py-2.5 shadow-sm active:translate-y-1 transition-all border-2 border-dashed border-[#dba087]" onclick="getHint()">
+            HINT (50💰)
+        </button>
+        <button class="bg-[#ba1a1a] dark:bg-[#930005] text-white font-pixel text-[8px] py-2.5 shadow-sm active:translate-y-1 transition-all border-2 border-dashed border-[#ffb4aa]" onclick="buyPowerup('heart_restore')">
+            +1 HEART (100💰)
+        </button>
+        <button class="bg-tertiary dark:bg-[#004a11] text-white font-pixel text-[8px] py-2.5 shadow-sm active:translate-y-1 transition-all border-2 border-dashed border-[#d1ffc9]" onclick="buyPowerup('double_xp')">
+            DOUBLE XP (150💰)
+        </button>
+    </div>
+</div>
+
+<!-- AI Feedback Portal -->
+<div id="ai-feedback-portal" class="hidden mt-6 bg-surface-container-highest dark:bg-[#433632] p-4 pixel-border relative">
+    <div class="absolute -top-3 left-6 bg-secondary-fixed dark:bg-secondary px-2 py-1 font-pixel text-[8px] text-on-secondary-container">QUEST_MASTER_CRITIQUE</div>
+    <p id="ai-feedback-text" class="font-pixel text-[10px] leading-relaxed text-on-surface dark:text-[#f1dfd8]">
+        Analyzing mission data...
+    </p>
+</div>
+
+<!-- Quest Review Modal -->
+<div id="quest-review-modal" class="hidden fixed inset-0 z-[250] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+    <div class="bg-primary-container dark:bg-[#3d0001] w-full max-w-2xl pixel-border p-8 shadow-2xl relative overflow-y-auto max-h-[90vh]">
+        <div class="text-center mb-8 border-b-4 border-primary dark:border-[#930005] pb-4">
+            <h2 class="font-pixel text-3xl md:text-4xl text-on-primary-container dark:text-[#ffb4aa] uppercase drop-shadow-md">QUEST CLEARED!</h2>
+            <p id="review-rank" class="font-pixel text-xl mt-4 text-tertiary dark:text-[#6bef72]"></p>
+        </div>
+        
+        <div class="space-y-4" id="review-logs-container">
+            <!-- Populated by JS -->
+        </div>
+
+        <div class="mt-8 text-center pt-6 border-t-4 border-surface-variant dark:border-[#2c211d]">
+            <p id="review-total-score" class="font-pixel text-sm text-outline dark:text-[#dba087] mb-6"></p>
+            <button class="bg-primary text-white font-pixel text-sm py-4 px-8 pixel-border shadow-[0_6px_0_0_#610002] active:translate-y-[6px] active:shadow-none transition-all" onclick="closeQuestReview()">
+                CONTINUE_JOURNEY
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Main Action & Progress -->
+<div class="space-y-8 pb-32">
+    <div class="flex justify-center flex-col items-center gap-6 py-10" id="start-quest-area">
+        <button class="group relative flex flex-col items-center gap-4 hover:scale-105 transition-transform" onclick="initGame(gameState.taskType)">
+            <div class="bg-[#bb000a] dark:bg-[#930005] px-10 py-8 pixel-border shadow-[0_10px_0_0_#610002] dark:shadow-[0_10px_0_0_#3d0001] group-active:translate-y-[10px] group-active:shadow-none transition-all flex items-center justify-center animate-pulse hover:animate-none">
+                <span class="font-pixel text-2xl md:text-3xl text-white dark:text-[#f1dfd8]" id="start-button-text">GET TICKET</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <p class="font-pixel text-[12px] text-primary dark:text-[#ffb4aa] uppercase tracking-widest">INSERT COIN TO START</p>
+            </div>
+        </button>
+    </div>
+
+<!-- Leaderboard Modal -->
+<div id="leaderboard-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="bg-[#fff4f1] dark:bg-[#2c211d] w-full max-w-md pixel-border p-8 shadow-2xl relative overflow-hidden brick-texture">
+        <button class="absolute top-4 right-4 text-outline hover:text-primary dark:text-[#dba087]" onclick="hideLeaderboard()">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <div class="text-center mb-8">
+            <h3 class="font-pixel text-xl text-primary dark:text-[#ffb4aa] uppercase mb-1">Hall of Fame</h3>
+            <p class="font-pixel text-[8px] opacity-70">Top Support Agents</p>
+        </div>
+        <div id="leaderboard-list" class="space-y-3">
+            <!-- Populated by JS -->
+        </div>
+        <button class="w-full mt-8 bg-surface-container dark:bg-[#1a1a1a] text-on-surface dark:text-[#f1dfd8] font-pixel text-[10px] py-3 pixel-border shadow-[0_4px_0_0_#dba087] dark:shadow-[0_4px_0_0_#121212] active:translate-y-1 active:shadow-none transition-all" onclick="hideLeaderboard()">BACK_TO_MISSION</button>
+    </div>
+</div>
+
+<!-- Archives Modal -->
+<div id="archives-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="bg-[#fff4f1] dark:bg-[#2c211d] w-full max-w-lg pixel-border p-8 shadow-2xl relative overflow-hidden brick-texture">
+        <button class="absolute top-4 right-4 text-outline hover:text-primary dark:text-[#dba087]" onclick="hideArchives()">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <div class="text-center mb-6">
+            <h3 class="font-pixel text-xl text-secondary dark:text-secondary uppercase mb-1">The Royal Archives</h3>
+            <p class="font-pixel text-[8px] opacity-70">Mission Accuracy & Legacy</p>
+        </div>
+        
+        <!-- Accuracy Chart -->
+        <div class="bg-surface-container dark:bg-[#1a1a1a] p-4 pixel-border mb-6">
+            <p class="font-pixel text-[8px] mb-3 dark:text-[#f1dfd8]">RECENT MISSION ACCURACY (%)</p>
+            <div id="accuracy-chart" class="h-24 flex items-end gap-1.5 justify-around px-2 border-b-2 border-outline/30">
+                <!-- Bars injected by JS -->
+            </div>
+            <div class="flex justify-between mt-2 font-pixel text-[6px] opacity-50">
+                <span>PAST</span>
+                <span>PRESENT</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-surface-container-low dark:bg-[#372b27] p-3 pixel-border text-center">
+                <p id="total-triage-stat" class="font-pixel text-lg text-primary">0</p>
+                <p class="font-pixel text-[6px] opacity-70">TOTAL_MISSIONS</p>
+            </div>
+            <div class="bg-surface-container-low dark:bg-[#372b27] p-3 pixel-border text-center">
+                <p id="avg-score-stat" class="font-pixel text-lg text-primary">0%</p>
+                <p class="font-pixel text-[6px] opacity-70">AVG_ACCURACY</p>
+            </div>
+        </div>
+
+        <button class="w-full bg-surface-container dark:bg-[#1a1a1a] text-on-surface dark:text-[#f1dfd8] font-pixel text-[10px] py-3 pixel-border shadow-[0_4px_0_0_#dba087] dark:shadow-[0_4px_0_0_#121212] active:translate-y-1 active:shadow-none transition-all" onclick="hideArchives()">CLOSE_ARCHIVES</button>
+    </div>
+</div>
+
+<div class="flex flex-col gap-4 mt-8 w-full max-w-sm mx-auto">
+    <div class="flex gap-4">
+        <button class="font-pixel text-[10px] px-4 py-2 pixel-border bg-surface-container dark:bg-[#2c211d] hover:bg-surface-variant dark:hover:bg-[#433632] dark:text-[#f1dfd8]" onclick="initGame('easy')">WORLD_1</button>
+        <button class="font-pixel text-[10px] px-4 py-2 pixel-border bg-surface-container dark:bg-[#2c211d] hover:bg-surface-variant dark:hover:bg-[#433632] dark:text-[#f1dfd8]" onclick="initGame('medium')">WORLD_2</button>
+        <button class="font-pixel text-[10px] px-4 py-2 pixel-border bg-surface-container dark:bg-[#2c211d] hover:bg-surface-variant dark:hover:bg-[#433632] dark:text-[#f1dfd8]" onclick="initGame('hard')">WORLD_3</button>
+    </div>
+    <div class="pixel-border bg-surface-container dark:bg-[#1a1a1a] p-3 flex gap-2">
+        <input id="custom-topic" type="text" class="bg-transparent border-none font-pixel text-[10px] focus:outline-none flex-grow text-on-surface dark:text-[#f1dfd8]" placeholder="ENTER CUSTOM MISSION TOPIC..."/>
+        <button class="bg-primary text-white font-pixel text-[8px] px-3 py-1 pixel-border" onclick="startCustomQuest()">EMBARK</button>
+    </div>
+</div>
+</div>
+<!-- Daily Triage Progress -->
+<div class="space-y-4">
+<div class="flex justify-between items-end">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary dark:text-[#6bef72]">assignment_turned_in</span>
+<span class="font-pixel text-[10px] dark:text-[#f1dfd8]">DAILY_TRIAGE</span>
+</div>
+<span class="font-pixel text-[10px] dark:text-[#f1dfd8]" id="progress-text">0 / 10 DONE</span>
+</div>
+<div class="h-8 bg-surface-container dark:bg-[#2c211d] pixel-border p-1">
+<div class="h-full bg-gradient-to-r from-tertiary to-tertiary-fixed dark:from-[#004a11] dark:to-[#6bef72] w-[0%] transition-all duration-500 flex items-center justify-end px-2" id="progress-fill">
+<span class="material-symbols-outlined text-white dark:text-[#d1ffc9] text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-20 px-4 bg-[#6e5a00] dark:bg-[#121212] shadow-[0_-4px_0_0_rgba(0,0,0,0.2)] dark:shadow-[0_-4px_0_0_rgba(0,0,0,0.5)] border-t-4 border-transparent dark:border-stone-800 transition-colors duration-0">
+<a class="flex flex-col items-center justify-center text-[#ffd4c2] dark:text-[#dba087] p-2 opacity-80 hover:bg-[#bb000a]/80" href="#">
+<span class="material-symbols-outlined">monitor</span>
+<span class="font-label text-[10px] font-bold uppercase tracking-widest mt-1">MAP</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffd4c2] dark:text-[#dba087] p-2 opacity-80 hover:bg-[#bb000a]/80" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-label text-[10px] font-bold uppercase tracking-widest mt-1">CASTLE</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#bb000a] dark:bg-[#930005] text-white p-2 scale-110 shadow-[0_-4px_0_0_#ffd4c2] dark:shadow-[0_-4px_0_0_#bb000a] transition-transform duration-75 step-end-transition" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assignment</span>
+<span class="font-label text-[10px] font-bold uppercase tracking-widest mt-1">QUEST</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#ffd4c2] dark:text-[#dba087] p-2 opacity-80 hover:bg-[#bb000a]/80" href="#">
+<span class="material-symbols-outlined">settings_input_component</span>
+<span class="font-label text-[10px] font-bold uppercase tracking-widest mt-1">PIPE</span>
+</a>
+</nav>
+<script type="module" src="./js/api-service.js"></script>
+<script type="module" src="./js/game-logic.js?v=2"></script>
+</body></html>
