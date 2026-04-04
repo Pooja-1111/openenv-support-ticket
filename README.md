@@ -1,3 +1,12 @@
+---
+title: Support Ticket Triage Gamified
+emoji: 👾
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 8000
+---
+
 # 🎮 Support Ticket Triage Simulator
 
 An immersive, retro-RPG style simulator where users play as a customer support agent. Level up your career, earn coins, and protect your 8-bit hearts by successfully evaluating, categorizing, and responding to simulated support tickets!
