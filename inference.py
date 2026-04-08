@@ -313,7 +313,7 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
         try:
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
-            self.send_header('Connection', 'close')  # Important: close connection immediately
+            self.send_header('Connection', 'close')
             self.end_headers()
             response = {"status": "healthy", "message": "Inference server running"}
             self.wfile.write(json.dumps(response).encode())
@@ -322,7 +322,7 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
             log(f"[HEALTHCHECK] Error in handler: {e}")
     
     def do_HEAD(self):
-        """Respond to HEAD requests - some validators use this."""
+        """Respond to HEAD requests."""
         try:
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
@@ -345,7 +345,6 @@ def run_server():
     Start the healthcheck server and execute the task.
     CRITICAL FIX: Start server first, ensure it's listening, then run tasks.
     """
-    # Check port availability
     if not is_port_available(HEALTHCHECK_PORT):
         log(f"[SERVER] WARNING: Port {HEALTHCHECK_PORT} may already be in use")
     
@@ -353,37 +352,33 @@ def run_server():
     
     try:
         httpd = HTTPServer(server_address, HealthCheckHandler)
-        httpd.timeout = 1  # Set timeout to allow checking for shutdown
+        httpd.timeout = 1
         
         log(f"[SERVER] Starting healthcheck server on port {HEALTHCHECK_PORT}")
         
-        # CRITICAL FIX: Start the server in a separate thread so it can handle requests immediately
+        # CRITICAL FIX: Start server in separate thread so it handles requests immediately
         server_thread = threading.Thread(target=httpd.serve_forever, daemon=False)
         server_thread.start()
         
-        # Give server a moment to start listening
+        # Give server time to start
         time.sleep(0.5)
         
         log("[SERVER] Healthcheck server is running")
         
-        # CRITICAL FIX: Run tasks in main thread, not as daemon
-        # This ensures tasks complete and healthcheck stays alive
+        # Run tasks in main thread
         try:
             main_execution()
         except Exception as e:
             log(f"[MAIN] Task execution error: {e}")
             log(f"[MAIN] Traceback: {traceback.format_exc()}")
         
-        # Keep server running after tasks complete (validator may check health again)
-        log("[SERVER] Tasks complete, keeping server alive for final healthchecks...")
-        
-        # Keep the server running for a while to handle any final healthchecks
-        # The validator might check health multiple times
-        shutdown_time = time.time() + 30  # Keep alive for 30 more seconds
+        # Keep server alive for final healthchecks
+        log("[SERVER] Tasks complete, keeping server alive...")
+        shutdown_time = time.time() + 30
         while time.time() < shutdown_time:
             time.sleep(1)
         
-        log("[SERVER] Shutting down healthcheck server")
+        log("[SERVER] Shutting down")
         httpd.shutdown()
         
     except Exception as e:
