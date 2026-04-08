@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import traceback
 from openai import OpenAI
 
 # Required Environment Variables per Pre-Submission Checklist
@@ -19,6 +20,7 @@ try:
     )
 except Exception as e:
     print(f"Error initializing OpenAI: {e}")
+    traceback.print_exc()
     client = None
 
 def run_task(task_type: str, max_tickets: int = 3):
@@ -94,16 +96,20 @@ def run_task(task_type: str, max_tickets: int = 3):
             
     except Exception as e:
         print(f"Exception in run_task: {e}")
+        traceback.print_exc()
         pass
     
     print("END")
 
 
 def main():
-    # Evaluate across all 3 difficulty pools
-    for difficulty in ["easy", "medium", "hard"]:
-        run_task(difficulty, max_tickets=3)
-
+    try:
+        # Evaluate across all 3 difficulty pools
+        for difficulty in ["easy", "medium", "hard"]:
+            run_task(difficulty, max_tickets=3)
+    except Exception as e:
+        print(f"Global unhandled exception: {e}")
+        traceback.print_exc()
 
 if __name__ == "__main__":
     main()
