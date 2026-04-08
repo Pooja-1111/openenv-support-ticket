@@ -26,7 +26,7 @@ def run_task(task_type: str, max_tickets: int = 3):
     print("START")
     
     try:
-        reset_resp = requests.post(f"{API_BASE_URL}/reset", params={"task_type": task_type})
+        reset_resp = requests.post(f"{API_BASE_URL}/reset", params={"task_type": task_type}, timeout=10)
         if reset_resp.status_code != 200:
             print("END")
             return
@@ -80,7 +80,7 @@ def run_task(task_type: str, max_tickets: int = 3):
             if action_data.get("decision") != "escalate":
                 action_data["team"] = None
                 
-            step_response = requests.post(f"{API_BASE_URL}/step", json=action_data)
+            step_response = requests.post(f"{API_BASE_URL}/step", json=action_data, timeout=10)
             if step_response.status_code != 200:
                 break
                 
@@ -92,7 +92,8 @@ def run_task(task_type: str, max_tickets: int = 3):
             print("STEP")
             ticket_count += 1
             
-    except Exception:
+    except Exception as e:
+        print(f"Exception in run_task: {e}")
         pass
     
     print("END")
