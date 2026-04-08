@@ -16,9 +16,19 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
+import traceback
+
+print("DEBUG: Starting Environment and GenAI Configuration...")
 load_dotenv()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-model = genai.GenerativeModel("gemini-1.5-flash")
+try:
+    print("DEBUG: Configuring GenAI API Key...")
+    genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+    print("DEBUG: Loading Gemini Model...")
+    model = genai.GenerativeModel("gemini-1.5-flash")
+    print("DEBUG: Model Loaded Successfully!")
+except Exception as e:
+    print(f"CRITICAL ERROR loading model: {e}")
+    traceback.print_exc()
 
 # Lazy Supabase initialization — avoids crash if env vars are missing at startup
 _supabase_client: Optional[Client] = None
@@ -500,7 +510,13 @@ def state():
 
 
 def main():
-    uvicorn.run("server.app:app", host="0.0.0.0", port=8000)
+    try:
+        print("DEBUG: Attempting to start uvicorn server on 0.0.0.0:8080...")
+        uvicorn.run("server.app:app", host="0.0.0.0", port=8080)
+    except Exception as e:
+        print(f"FATAL ERROR starting server: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
     main()
