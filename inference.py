@@ -2,17 +2,19 @@ import os
 import json
 import requests
 import traceback
+import threading
 from openai import OpenAI
+from flask import Flask, jsonify
+
+# Initialize Flask App
+app = Flask(__name__)
 
 # Required Environment Variables per Pre-Submission Checklist
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8080")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
 HF_TOKEN = os.getenv("HF_TOKEN")
 
-# Optional – if you use from_docker_image():
-LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
-
-# All LLM calls use the OpenAI client configured via these variables
+# Initialize OpenAI Client
 try:
     client = OpenAI(
         api_key=HF_TOKEN or os.environ.get("OPENAI_API_KEY", "dummy_key"),
@@ -24,7 +26,7 @@ except Exception as e:
     client = None
 
 def run_task(task_type: str, max_tickets: int = 3):
-    # Stdout logs follow the required structured format exactly
+    print(f"STARTING TASK: {task_type}")
     print("START")
     
     try:
@@ -69,7 +71,6 @@ def run_task(task_type: str, max_tickets: int = 3):
                 
                 action_data = json.loads(response.choices[0].message.content)
             except Exception:
-                # Fallback to avoid crashing the eval loop
                 action_data = {
                     "decision": "escalate",
                     "team": "support",
@@ -78,7 +79,6 @@ def run_task(task_type: str, max_tickets: int = 3):
                     "reasoning": "Fallback due to LLM error"
                 }
             
-            # Ensure "team" is null instead of missing if not escalating
             if action_data.get("decision") != "escalate":
                 action_data["team"] = None
                 
@@ -90,26 +90,41 @@ def run_task(task_type: str, max_tickets: int = 3):
             done = step_data.get("done", False)
             observation = step_data.get("observation", {})
             
-            # Print exact STEP tag after successful environment step interaction
             print("STEP")
             ticket_count += 1
             
     except Exception as e:
         print(f"Exception in run_task: {e}")
         traceback.print_exc()
-        pass
     
     print("END")
 
-
-def main():
+def main_execution_loop():
+    """Wrapper to run the evaluation logic."""
     try:
-        # Evaluate across all 3 difficulty pools
         for difficulty in ["easy", "medium", "hard"]:
             run_task(difficulty, max_tickets=3)
+        print("ALL TASKS COMPLETED")
     except Exception as e:
         print(f"Global unhandled exception: {e}")
         traceback.print_exc()
 
+# --- SERVER ROUTES FOR HACKATHON VALIDATOR ---
+
+@app.route('/', methods=['GET'])
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Answers the validator's healthcheck to prevent timeouts."""
+    return jsonify({"status": "ready", "info": "Inference server is running"}), 200
+
+@app.route('/run', methods=['POST'])
+def start_evaluation():
+    """Allows the validator to trigger the main loop."""
+    thread = threading.Thread(target=main_execution_loop)
+    thread.start()
+    return jsonify({"status": "started"}), 202
+
 if __name__ == "__main__":
-    main()
+    # Standard hackathon port 8080 and host 0.0.0.0 is MANDATORY
+    print("INFO: Started")
+    app.run(host='0.0.0.0', port=8080)
