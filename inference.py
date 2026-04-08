@@ -1,57 +1,29 @@
 import os
-import json
-import requests
-import sys
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import http.server
+import socketserver
+import threading
 
-# Force immediate log printing for the dashboard
-def log(msg):
-    print(msg)
-    sys.stdout.flush()
+# 1. Your existing task logic goes here
+def run_my_hackathon_task():
+    print("START")
+    # ... your logic for EASY, MEDIUM, HARD ...
+    print("END")
 
-# --- CONFIGURATION ---
-# We use 0.0.0.0 to ensure Docker binds to all interfaces
-PORT = 8080 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://0.0.0.0:8080")
-
-# --- MINIMAL HANDLER ---
-class ValidatorHandler(BaseHTTPRequestHandler):
+# 2. A simple server to keep the container alive and passing healthchecks
+class HealthCheckHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
-        """Responds to the Validator's Healthcheck immediately."""
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
-        self.wfile.write(json.dumps({"status": "ready"}).encode())
-
-    def do_POST(self):
-        """Handles task triggers if the validator uses POST."""
-        self.send_response(200)
-        self.end_headers()
-        # Trigger the task logic here
-        run_main_logic()
-
-def run_main_logic():
-    log("START")
-    try:
-        # Minimal logic to satisfy the 'START', 'STEP', 'END' requirements
-        for difficulty in ["easy", "medium", "hard"]:
-            log(f"Processing {difficulty}")
-            # Placeholder for your actual requests logic
-            log("STEP")
-    except Exception as e:
-        log(f"Error: {e}")
-    log("END")
+        self.wfile.write(b'{"status": "healthy"}')
 
 def start_server():
-    log("INFO: Started")
-    server_address = ('0.0.0.0', PORT)
-    httpd = HTTPServer(server_address, ValidatorHandler)
-    
-    # We run the logic once at startup, then keep the server alive
-    run_main_logic()
-    
-    log(f"Server listening on port {PORT}...")
-    httpd.serve_forever()
+    # Standard port is 8080; use 0.0.0.0 to be visible outside the container
+    with socketserver.TCPServer(("0.0.0.0", 8080), HealthCheckHandler) as httpd:
+        print("INFO: Started")
+        # Run your actual task in the background so it doesn't block the server
+        threading.Thread(target=run_my_hackathon_task).start()
+        httpd.serve_forever()
 
 if __name__ == "__main__":
     start_server()
