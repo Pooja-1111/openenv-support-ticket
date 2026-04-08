@@ -1,6 +1,6 @@
 """
-OpenEnv Hackathon - Support Ticket Triage
-FINAL WORKING VERSION - Blocking server, verified connections
+OpenEnv Hackathon - FINAL ATTEMPT
+Try different ports and binding approaches
 """
 
 import os
@@ -16,24 +16,23 @@ def log(m):
     print(m, flush=True)
     sys.stdout.flush()
 
-# ==================== CONFIG ====================
-PORT = 8080
+# Try multiple ports - OpenEnv might use different one
+PORTS = [8080, 80, 8000, 3000]
 TASK = os.getenv("TASK_NAME", "support_ticket_triage")
 ENDPOINT = os.getenv(f"SCALER_ROUTE_TASK_{TASK.upper()}_ENDPOINT", "http://env-task-server:8000")
 
-log(f"[INIT] Starting with PORT={PORT}")
+log(f"[INIT] Will try ports: {PORTS}")
 
 # ==================== HEALTHCHECK ====================
 class Handler(BaseHTTPRequestHandler):
-    def log_message(self, *a): 
-        pass
+    def log_message(self, *a): pass
     
     def do_GET(self):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
         self.end_headers()
         self.wfile.write(b'{"status":"healthy"}')
-        log("[HEALTHCHECK] Responded 200 OK")
+        log(f"[HEALTHCHECK] 200 OK on path: {self.path}")
 
 # ==================== TRIAGE ====================
 def triage(msg):
@@ -52,7 +51,7 @@ def triage(msg):
 
 # ==================== TASKS ====================
 def run_tasks():
-    log("[TASKS] Starting task execution")
+    log("[TASKS] Starting")
     for level in ["easy", "medium", "hard"]:
         log(f"START {level}")
         try:
@@ -63,64 +62,45 @@ def run_tasks():
                 r = requests.post(f"{ENDPOINT}/step", json=act, timeout=30)
                 d = r.json()
                 log("STEP")
-                if d.get("done"): 
-                    log(f"[TASKS] {level} completed")
-                    break
+                if d.get("done"): break
                 obs = d.get("observation",{})
         except Exception as e:
-            log(f"[ERROR] {level}: {e}")
+            log(f"[ERROR] {e}")
         log("END")
         time.sleep(1)
-    log("[TASKS] All tasks completed")
 
 # ==================== MAIN ====================
 def main():
-    # CRITICAL: Create server with address reuse
     HTTPServer.allow_reuse_address = True
     
-    # Try to bind to port with retry
-    for attempt in range(5):
+    # Try to bind to any available port
+    server = None
+    for port in PORTS:
         try:
-            server = HTTPServer(("0.0.0.0", PORT), Handler)
-            log(f"[SERVER] Bound to port {PORT} on attempt {attempt+1}")
+            server = HTTPServer(("0.0.0.0", port), Handler)
+            log(f"[SERVER] SUCCESS! Bound to port {port}")
             break
         except OSError as e:
-            log(f"[SERVER] Bind attempt {attempt+1} failed: {e}")
-            time.sleep(1)
-    else:
-        log("[SERVER] FAILED to bind to port")
+            log(f"[SERVER] Port {port} failed: {e}")
+    
+    if not server:
+        log("[SERVER] CRITICAL: Could not bind to any port!")
         sys.exit(1)
     
-    # Start server in daemon thread (so main thread can run tasks)
-    server_thread = threading.Thread(target=server.serve_forever, daemon=True)
-    server_thread.start()
-    log("[SERVER] Server thread started")
+    # Start server
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    log("[SERVER] Thread started")
     
-    # CRITICAL: Wait and verify server is actually accepting connections
-    time.sleep(2)
+    # Wait for server to be ready
+    time.sleep(3)
     
-    # Self-test to ensure server works
-    try:
-        test_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        test_sock.settimeout(5)
-        test_sock.connect(("127.0.0.1", PORT))
-        test_sock.send(b"GET / HTTP/1.0\r\n\r\n")
-        response = test_sock.recv(1024)
-        test_sock.close()
-        log(f"[SERVER] Self-test passed: {response[:50]}...")
-    except Exception as e:
-        log(f"[SERVER] Self-test failed: {e}")
-        # Continue anyway, maybe external access works
-    
-    log("[SERVER] Ready for healthchecks!")
-    
-    # Run tasks in main thread
+    # Run tasks
     run_tasks()
     
-    # Keep alive for final healthchecks
-    log("[MAIN] Keeping alive for 30s...")
-    time.sleep(30)
-    log("[MAIN] Exiting")
+    # Keep alive
+    log("[MAIN] Keeping alive...")
+    time.sleep(60)
 
 if __name__ == "__main__":
     main()
