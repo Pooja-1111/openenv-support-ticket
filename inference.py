@@ -12,7 +12,14 @@ HF_TOKEN = os.getenv("HF_TOKEN")
 LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
 
 # All LLM calls use the OpenAI client configured via these variables
-client = OpenAI()
+try:
+    client = OpenAI(
+        api_key=HF_TOKEN or os.environ.get("OPENAI_API_KEY", "dummy_key"),
+        base_url="https://api-inference.huggingface.co/v1/" if HF_TOKEN else None
+    )
+except Exception as e:
+    print(f"Error initializing OpenAI: {e}")
+    client = None
 
 def run_task(task_type: str, max_tickets: int = 3):
     # Stdout logs follow the required structured format exactly
@@ -46,6 +53,9 @@ def run_task(task_type: str, max_tickets: int = 3):
             """
             
             try:
+                if client is None:
+                    raise Exception("OpenAI client is not initialized")
+                
                 response = client.chat.completions.create(
                     model=MODEL_NAME,
                     messages=[
