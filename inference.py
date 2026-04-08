@@ -1,6 +1,6 @@
 """
 OpenEnv Hackathon - Support Ticket Triage Inference Script
-FIXED VERSION - Addresses all common submission errors
+FIXED VERSION - Addresses healthcheck timeout and execution issues
 """
 
 import os
@@ -10,6 +10,7 @@ import traceback
 import threading
 import sys
 import time
+import socket
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # ==================== CRITICAL: LOGGING ====================
@@ -27,11 +28,10 @@ def log(message):
 HEALTHCHECK_PORT = 8080
 
 # TASK_ENDPOINT: The ACTUAL OpenEnv task server (NOT your own server!)
-# This comes from environment variable provided by the validator
-TASK_NAME = os.getenv("TASK_NAME", "support_ticket_triage")  # Your task name
+TASK_NAME = os.getenv("TASK_NAME", "support_ticket_triage")
 TASK_ENDPOINT = os.getenv(
     f"SCALER_ROUTE_TASK_{TASK_NAME.upper()}_ENDPOINT",
-    os.getenv("TASK_ENDPOINT", "http://env-task-server:8000")  # Fallback
+    os.getenv("TASK_ENDPOINT", "http://env-task-server:8000")
 )
 
 # LLM Configuration
@@ -50,7 +50,6 @@ client = None
 
 try:
     if HF_TOKEN:
-        # Use Hugging Face Inference API
         from openai import OpenAI
         client = OpenAI(
             api_key=HF_TOKEN,
@@ -58,7 +57,6 @@ try:
         )
         log("[LLM] Using Hugging Face Inference API")
     elif OPENAI_API_KEY:
-        # Use OpenAI directly
         from openai import OpenAI
         client = OpenAI(api_key=OPENAI_API_KEY)
         log("[LLM] Using OpenAI API")
@@ -203,10 +201,6 @@ def fallback_triage_logic(customer_message: str) -> dict:
 def run_task(task_type: str, max_tickets: int = 10):
     """
     Execute the triage task for a specific difficulty level.
-    
-    Args:
-        task_type: "easy", "medium", or "hard"
-        max_tickets: Maximum number of tickets to process
     """
     log(f"[TASK] Starting task_type={task_type}")
     log("START")  # Required by validator
@@ -298,7 +292,7 @@ def main_execution():
     # Run tasks for each difficulty level
     for difficulty in ["easy", "medium", "hard"]:
         run_task(difficulty, max_tickets=10)
-        time.sleep(1)  # Brief pause between difficulty levels
+        time.sleep(1)
     
     log("[MAIN] All tasks completed")
 
@@ -315,34 +309,87 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
         pass
     
     def do_GET(self):
-        """Respond to GET requests with 200 OK."""
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-        response = {"status": "healthy", "message": "Inference server running"}
-        self.wfile.write(json.dumps(response).encode())
+        """Respond to GET requests with 200 OK immediately."""
+        try:
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Connection', 'close')  # Important: close connection immediately
+            self.end_headers()
+            response = {"status": "healthy", "message": "Inference server running"}
+            self.wfile.write(json.dumps(response).encode())
+            self.wfile.flush()
+        except Exception as e:
+            log(f"[HEALTHCHECK] Error in handler: {e}")
+    
+    def do_HEAD(self):
+        """Respond to HEAD requests - some validators use this."""
+        try:
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Connection', 'close')
+            self.end_headers()
+        except Exception as e:
+            log(f"[HEALTHCHECK] Error in HEAD handler: {e}")
+
+def is_port_available(port):
+    """Check if port is available."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind(('0.0.0.0', port))
+            return True
+        except OSError:
+            return False
 
 def run_server():
     """
     Start the healthcheck server and execute the task.
+    CRITICAL FIX: Start server first, ensure it's listening, then run tasks.
     """
-    log(f"[SERVER] Starting healthcheck server on port {HEALTHCHECK_PORT}")
+    # Check port availability
+    if not is_port_available(HEALTHCHECK_PORT):
+        log(f"[SERVER] WARNING: Port {HEALTHCHECK_PORT} may already be in use")
     
     server_address = ('0.0.0.0', HEALTHCHECK_PORT)
-    httpd = HTTPServer(server_address, HealthCheckHandler)
     
-    log("[SERVER] Server ready, starting task execution")
-    
-    # Run the task in a background thread so server can respond to healthchecks
-    task_thread = threading.Thread(target=main_execution, daemon=True)
-    task_thread.start()
-    
-    # Keep server running to handle healthchecks
-    log("[SERVER] Serving healthcheck requests...")
     try:
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        log("[SERVER] Shutting down")
+        httpd = HTTPServer(server_address, HealthCheckHandler)
+        httpd.timeout = 1  # Set timeout to allow checking for shutdown
+        
+        log(f"[SERVER] Starting healthcheck server on port {HEALTHCHECK_PORT}")
+        
+        # CRITICAL FIX: Start the server in a separate thread so it can handle requests immediately
+        server_thread = threading.Thread(target=httpd.serve_forever, daemon=False)
+        server_thread.start()
+        
+        # Give server a moment to start listening
+        time.sleep(0.5)
+        
+        log("[SERVER] Healthcheck server is running")
+        
+        # CRITICAL FIX: Run tasks in main thread, not as daemon
+        # This ensures tasks complete and healthcheck stays alive
+        try:
+            main_execution()
+        except Exception as e:
+            log(f"[MAIN] Task execution error: {e}")
+            log(f"[MAIN] Traceback: {traceback.format_exc()}")
+        
+        # Keep server running after tasks complete (validator may check health again)
+        log("[SERVER] Tasks complete, keeping server alive for final healthchecks...")
+        
+        # Keep the server running for a while to handle any final healthchecks
+        # The validator might check health multiple times
+        shutdown_time = time.time() + 30  # Keep alive for 30 more seconds
+        while time.time() < shutdown_time:
+            time.sleep(1)
+        
+        log("[SERVER] Shutting down healthcheck server")
+        httpd.shutdown()
+        
+    except Exception as e:
+        log(f"[SERVER] CRITICAL ERROR: {e}")
+        log(f"[SERVER] Traceback: {traceback.format_exc()}")
+        raise
 
 # ==================== ENTRY POINT ====================
 
