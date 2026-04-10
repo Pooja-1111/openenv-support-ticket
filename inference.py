@@ -6,12 +6,18 @@ This code is designed to pass ALL validator checks on the first try.
 
 import os
 import sys
+import platform
 import json
 import time
 import requests
 import traceback
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
+
+# ==================== DIAGNOSTIC LOGGING ====================
+print(f"INFO: System Python Version: {sys.version}", flush=True)
+print(f"INFO: OS Platform: {platform.platform()}", flush=True)
+print("INFO: Started", flush=True)
 
 # ==================== CRITICAL: IMMEDIATE LOGGING ====================
 def log(message):
