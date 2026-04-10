@@ -51,7 +51,7 @@ def run_health_server():
 # --- MAIN EXECUTION ---
 def main():
     # 1. Start Healthcheck in background
-    threading.Thread(target=run_health_server, daemon=True). conquest()
+    threading.Thread(target=run_health_server, daemon=True).start()
     
     print("INFO: Started", flush=True)
     log_start()
