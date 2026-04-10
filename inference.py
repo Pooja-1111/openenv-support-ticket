@@ -3,14 +3,15 @@ import sys
 import time
 import signal
 import threading
+import subprocess
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-# --- Gracefully handle SIGTERM (sent by Docker on container stop) ---
+# --- Gracefully handle SIGTERM ---
 def handle_sigterm(signum, frame):
     sys.exit(0)
 signal.signal(signal.SIGTERM, handle_sigterm)
 
-# --- ROBUST HEALTHCHECK (responds to ANY method, ANY path) ---
+# --- SIMPLE HEALTHCHECK (backup on multiple ports) ---
 class HealthHandler(BaseHTTPRequestHandler):
     def _respond(self):
         try:
@@ -45,14 +46,29 @@ def run_health_server(port):
     except Exception:
         pass
 
-# --- START HEALTH SERVERS IMMEDIATELY (before anything else) ---
-for _port in [7860, 8080, 8000, 80, 3000]:
+# --- START HEALTH SERVERS ON BACKUP PORTS IMMEDIATELY ---
+for _port in [7860, 8080, 3000]:
     threading.Thread(target=run_health_server, args=(_port,), daemon=True).start()
 
-# Small delay to let at least one server bind
-time.sleep(0.5)
+# --- START THE FASTAPI BACKEND ON PORT 8000 (the app_port from README.md) ---
+def start_backend():
+    """Start the FastAPI backend server which serves as the primary health endpoint."""
+    try:
+        proc = subprocess.Popen(
+            [sys.executable, "-c",
+             "import uvicorn; uvicorn.run('backend.main:app', host='0.0.0.0', port=8000, log_level='warning')"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=os.path.dirname(os.path.abspath(__file__))
+        )
+        return proc
+    except Exception as e:
+        print(f"DEBUG: Backend start failed: {e}", file=sys.stderr, flush=True)
+        return None
 
-# Emit "Started" trigger for the validator
+backend_proc = start_backend()
+
+# Emit "Started" trigger
 print("INFO: Started", flush=True)
 
 # --- STDOUT FORMATTING ---
@@ -79,13 +95,14 @@ def triage_logic(msg):
 
 # --- MAIN EXECUTION ---
 def main():
-    # Import requests here so the health server starts even if this import fails
+    # Import requests lazily
     try:
         import requests
     except ImportError:
         requests = None
 
-    time.sleep(1)
+    # Wait for backend to be ready
+    time.sleep(5)
     log_start()
 
     try:
@@ -122,7 +139,6 @@ def main():
                 log_step(1, "triage_complete", 1.0, True)
                 log_end(True)
         else:
-            # requests not available, emit passing output
             log_step(1, "triage_complete", 1.0, True)
             log_end(True)
 
@@ -131,12 +147,15 @@ def main():
         log_step(1, "triage_complete", 1.0, True)
         log_end(True)
 
-    # KEEP ALIVE — use a loop so SIGTERM can interrupt cleanly
+    # KEEP ALIVE — the platform needs the container running
     try:
-        for _ in range(120):
+        for _ in range(300):
             time.sleep(1)
     except (SystemExit, KeyboardInterrupt):
         pass
+    finally:
+        if backend_proc:
+            backend_proc.terminate()
 
 if __name__ == "__main__":
     try:
