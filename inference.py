@@ -21,11 +21,10 @@ def log_end(success=True):
 # --- HEALTHCHECK SERVER ---
 class HealthHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == '/health' or self.path == '/':
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(b'{"status":"healthy"}')
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        self.wfile.write(b'{"status":"healthy"}')
     def log_message(self, *args): pass # Keep logs clean
 
 def run_health_server(port=8080):
