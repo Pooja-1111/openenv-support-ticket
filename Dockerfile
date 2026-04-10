@@ -1,22 +1,23 @@
-FROM python:3.10-slim
+# Use 3.11 to satisfy the requirement mentioned in the logs
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install curl for HEALTHCHECK
+# Install dependencies (curl for healthcheck)
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Copy your script
+COPY inference.py .
 
-# Multi-port coverage
-EXPOSE 8000 8080 7860
+# Expose the standard port
+EXPOSE 8080
 
-ENV PYTHONUNBUFFERED=1
+# Platform uses this to verify the server is ready
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=10 \
+  CMD curl -f http://localhost:8080/ || exit 1
 
-# Universal healthcheck
-HEALTHCHECK --interval=3s --timeout=2s --start-period=5s --retries=5 \
-  CMD curl -f http://localhost:8000/ || curl -f http://localhost:8080/ || curl -f http://localhost:7860/ || exit 1
-
-CMD ["python3", "inference.py"]
+# Standard hackathon entry point
+CMD ["python", "inference.py"]
