@@ -1,245 +1,402 @@
+#!/usr/bin/env python3
+"""
+OpenEnv Hackathon - Support Ticket Triage - BULLETPROOF INFERENCE
+This code is designed to pass ALL validator checks on the first try.
+"""
+
 import os
 import sys
 import json
+import time
 import requests
 import traceback
 import threading
-import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from datetime import datetime
 
-# --- CONFIGURATION (STRICTLY FROM ENV) ---
-PORT = 8080
-# The platform provides this endpoint for the environment
-TASK_ENDPOINT = os.getenv("SCALER_ROUTE_TASK_SUPPORT_TICKET_TRIAGE_ENDPOINT", "http://env-task-server:8000")
-HF_TOKEN = os.getenv("HF_TOKEN")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
-
-# --- STDOUT LOGGING HELPER (FLUSH=TRUE) ---
-def log(msg):
-    timestamp = datetime.now().strftime("%H:%M:%S")
-    print(f"[{timestamp}] {msg}", flush=True)
+# ==================== CRITICAL: IMMEDIATE LOGGING ====================
+def log(message):
+    """Log with immediate flush - validator reads stdout in real-time."""
+    print(message, flush=True)
     sys.stdout.flush()
 
-# --- LLM INITIALIZATION ---
+# ==================== CONFIGURATION ====================
+PORT = 8080
+
+# CRITICAL: Read task endpoint from environment (NOT localhost!)
+TASK_ENDPOINT = os.getenv(
+    "SCALER_ROUTE_TASK_SUPPORT_TICKET_TRIAGE_ENDPOINT",
+    os.getenv("TASK_ENDPOINT", "http://env-task-server:8000")
+)
+
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
+HF_TOKEN = os.getenv("HF_TOKEN")
+OPENAI_KEY = os.getenv("OPENAI_API_KEY")
+
+log(f"[INIT] Task Endpoint: {TASK_ENDPOINT}")
+log(f"[INIT] Model: {MODEL_NAME}")
+log(f"[INIT] HF Token: {'✓' if HF_TOKEN else '✗'}")
+log(f"[INIT] OpenAI Key: {'✓' if OPENAI_KEY else '✗'}")
+
+# ==================== LLM CLIENT SETUP ====================
 client = None
+
 try:
     if HF_TOKEN:
         from openai import OpenAI
-        client = OpenAI(api_key=HF_TOKEN, base_url="https://api-inference.huggingface.co/v1/")
-        log("[LLM] Initialized Hugging Face Inference API")
-    elif OPENAI_API_KEY:
+        client = OpenAI(
+            api_key=HF_TOKEN,
+            base_url="https://api-inference.huggingface.co/v1/"
+        )
+        log("[LLM] ✓ Hugging Face client initialized")
+    elif OPENAI_KEY:
         from openai import OpenAI
-        client = OpenAI(api_key=OPENAI_API_KEY)
-        log("[LLM] Initialized OpenAI API")
+        client = OpenAI(api_key=OPENAI_KEY)
+        log("[LLM] ✓ OpenAI client initialized")
+    else:
+        log("[LLM] ⚠ No API keys - using fallback logic only")
 except Exception as e:
-    log(f"[LLM] Initialization failed: {e}")
+    log(f"[LLM] ✗ Client init failed: {e}")
+    client = None
 
-# --- TRIAGE LOGIC ---
-
-def fallback_triage_logic(message):
-    message = message.lower()
+# ==================== FALLBACK TRIAGE LOGIC ====================
+def fallback_triage(message):
+    """Rule-based triage when LLM is unavailable or fails."""
+    msg_lower = message.lower()
     
-    # 1. Critical Incident / Revenue Impact
-    if any(word in message for word in ["critical", "outage", "down", "revenue", "security breach", "data loss"]):
-        return {
-            "decision": "escalate",
-            "team": "engineering",
-            "urgency": "critical",
-            "draft_response": "We have identified this as a critical incident. Our engineering team has been alerted and is investigating immediately.",
-            "reasoning": "Detected keywords indicating high-impact outage or security risk."
-        }
-    
-    # 2. Billing / Payment
-    if any(word in message for word in ["charged", "payment", "refund", "invoice", "billing"]):
+    # Billing issues - escalate to billing
+    if any(w in msg_lower for w in ["charged", "charge", "payment", "refund", "billing", "invoice", "$"]):
         return {
             "decision": "escalate",
             "team": "billing",
             "urgency": "high",
-            "draft_response": "I've escalated your billing concern to our finance team for a priority review of the charges.",
-            "reasoning": "Request involves financial transactions or billing disputes."
+            "draft_response": "I apologize for the billing issue. Escalating to our billing team immediately for investigation and resolution.",
+            "reasoning": "Billing issues require finance team intervention for refund processing and account correction."
         }
     
-    # 3. Technical Bugs / Crashes
-    if any(word in message for word in ["crash", "error", "bug", "broken", "stuck", "not working"]):
-        return {
-            "decision": "escalate",
-            "team": "engineering",
-            "urgency": "high",
-            "draft_response": "I am sorry for the technical issue. I have escalated this to our engineering team with your details.",
-            "reasoning": "Detected technical failure or software bug."
-        }
-        
-    # 4. Account Access
-    if any(word in message for word in ["password", "reset", "login", "can't log", "forgot"]):
+    # Password/login - resolve with instructions
+    if any(w in msg_lower for w in ["password", "reset", "login", "log in", "access", "forgot", "locked out"]):
         return {
             "decision": "resolve",
             "team": "support",
             "urgency": "medium",
-            "draft_response": "You can reset your password by clicking 'Forgot Password' on the login page. I've sent a reset link to your email.",
-            "reasoning": "Standard account access request that can be resolved via self-service."
+            "draft_response": "I can help! Please visit our password reset page and follow the instructions. You'll receive a reset link via email within minutes.",
+            "reasoning": "Password reset is a standard self-service procedure that can be resolved with clear instructions."
         }
-        
-    # 5. Feature Requests
-    if any(word in message for word in ["feature", "add", "integrate", "would be nice", "can you"]):
+    
+    # Critical incidents - immediate escalation
+    if any(w in msg_lower for w in ["critical", "emergency", "outage", "down", "revenue", "security", "breach", "data loss"]):
+        return {
+            "decision": "escalate",
+            "team": "engineering",
+            "urgency": "critical",
+            "draft_response": "This is marked as CRITICAL. Escalating immediately to our engineering team for urgent investigation.",
+            "reasoning": "Critical incidents require immediate technical team attention to prevent further impact."
+        }
+    
+    # Technical bugs - escalate to engineering
+    if any(w in msg_lower for w in ["crash", "error", "bug", "not working", "broken", "stuck", "freeze", "slow"]):
+        return {
+            "decision": "escalate",
+            "team": "engineering",
+            "urgency": "high",
+            "draft_response": "I apologize for the technical issue. Escalating to our engineering team for investigation and fix.",
+            "reasoning": "Technical bugs require engineering analysis and potential code fixes."
+        }
+    
+    # Feature requests - ask for details
+    if any(w in msg_lower for w in ["feature", "add", "integrate", "new", "would be nice", "suggestion", "enhancement"]):
         return {
             "decision": "needs_more_info",
             "team": "product",
             "urgency": "low",
-            "draft_response": "Thank you for the suggestion! Could you provide more details on how this feature would help your workflow?",
-            "reasoning": "Product suggestion requiring requirement gathering."
+            "draft_response": "Thank you for the suggestion! Can you provide more details about your use case and how this feature would help?",
+            "reasoning": "Feature requests need detailed requirements before routing to product team."
         }
-
-    # Default fallback
+    
+    # Default - ask for clarification
     return {
         "decision": "needs_more_info",
         "team": "support",
         "urgency": "medium",
-        "draft_response": "I've received your message. Could you please provide a few more details so I can assist you better?",
-        "reasoning": "General inquiry requiring more context for accurate triage."
+        "draft_response": "Thank you for contacting us. Can you provide more details about your issue so we can assist you better?",
+        "reasoning": "Insufficient information to make informed triage decision."
     }
 
-def analyze_ticket(message):
-    if client:
-        try:
-            log(f"[LLM] Analyzing message: {message[:50]}...")
-            prompt = f"Analyze this support ticket and return a JSON triage decision:\nTicket: {message}\n\nRequired format: {{\"decision\": \"...\", \"team\": \"...\", \"urgency\": \"...\", \"draft_response\": \"...\", \"reasoning\": \"...\"}}"
+# ==================== LLM TRIAGE ====================
+def llm_triage(message):
+    """Attempt to use LLM for intelligent triage."""
+    if not client:
+        return None
+    
+    try:
+        prompt = f"""You are a support ticket triage expert. Analyze this ticket and respond with ONLY valid JSON.
+
+Customer message: "{message}"
+
+Return JSON with these exact fields:
+{{
+    "decision": "resolve" | "escalate" | "needs_more_info",
+    "team": "billing" | "engineering" | "product" | "support",
+    "urgency": "low" | "medium" | "high" | "critical",
+    "draft_response": "Professional response to customer",
+    "reasoning": "Brief explanation of decision"
+}}
+
+Triage rules:
+- Billing/payment issues → escalate to billing, high urgency
+- Password/login → resolve with instructions, medium urgency
+- Bugs/crashes → escalate to engineering, high urgency
+- Feature requests → needs_more_info or route to product, low urgency
+- Critical/outage/revenue loss → escalate, critical urgency"""
+
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+            temperature=0.3,
+            max_tokens=500,
+            timeout=15
+        )
+        
+        content = response.choices[0].message.content.strip()
+        
+        # Remove markdown code blocks if present
+        if content.startswith("```"):
+            content = content.split("```")[1]
+            if content.startswith("json"):
+                content = content[4:]
+            content = content.strip()
+        
+        action = json.loads(content)
+        
+        # Validate required fields
+        required = ["decision", "team", "urgency", "draft_response", "reasoning"]
+        if not all(field in action for field in required):
+            log(f"[LLM] ⚠ Missing fields, using fallback")
+            return None
+        
+        # Validate enum values
+        valid_decisions = ["resolve", "escalate", "needs_more_info"]
+        valid_teams = ["billing", "engineering", "product", "support"]
+        valid_urgency = ["low", "medium", "high", "critical"]
+        
+        if action["decision"] not in valid_decisions:
+            log(f"[LLM] ⚠ Invalid decision: {action['decision']}")
+            return None
+        
+        if action["team"] not in valid_teams:
+            log(f"[LLM] ⚠ Invalid team: {action['team']}")
+            return None
             
-            response = client.chat.completions.create(
-                model=MODEL_NAME,
-                messages=[{"role": "user", "content": prompt}],
-                response_format={"type": "json_object"},
-                timeout=25
+        if action["urgency"] not in valid_urgency:
+            log(f"[LLM] ⚠ Invalid urgency: {action['urgency']}")
+            return None
+        
+        log(f"[LLM] ✓ Valid response: {action['decision']} → {action['team']}")
+        return action
+        
+    except json.JSONDecodeError as e:
+        log(f"[LLM] ✗ JSON parse error: {e}")
+        return None
+    except Exception as e:
+        log(f"[LLM] ✗ Error: {e}")
+        return None
+
+# ==================== ANALYZE TICKET ====================
+def analyze_ticket(message):
+    """Try LLM first, fallback to rules if it fails."""
+    # Try LLM
+    action = llm_triage(message)
+    if action:
+        return action
+    
+    # Fallback to rules
+    log("[TRIAGE] Using fallback logic")
+    return fallback_triage(message)
+
+# ==================== TASK EXECUTION ====================
+def run_task(difficulty):
+    """Execute triage task for one difficulty level."""
+    log(f"\n[TASK] ========== Starting {difficulty.upper()} ==========")
+    log("START")
+    
+    try:
+        # Step 1: Reset environment
+        reset_url = f"{TASK_ENDPOINT}/reset"
+        log(f"[TASK] Resetting: {reset_url}?task_type={difficulty}")
+        
+        try:
+            reset_resp = requests.post(
+                reset_url,
+                params={"task_type": difficulty},
+                timeout=30
             )
             
-            result = json.loads(response.choices[0].message.content)
-            # Basic validation of required fields
-            required = ["decision", "team", "urgency", "draft_response", "reasoning"]
-            if all(k in result for k in required):
-                return result
-            else:
-                log(f"[LLM] Missing fields in JSON: {result.keys()}")
-        except Exception as e:
-            log(f"[LLM] Error: {e}")
-            
-    return fallback_triage_logic(message)
-
-# --- TASK EXECUTION LOOP ---
-
-def run_task(difficulty):
-    log("INFO: Started")
-    log("START")
-    try:
-        # 1. Reset Environment
-        reset_url = f"{TASK_ENDPOINT}/reset"
-        log(f"[TASK] POST {reset_url}?task_type={difficulty}")
-        
-        try:
-            r = requests.post(reset_url, params={"task_type": difficulty}, timeout=30)
-            log(f"[TASK] Status: {r.status_code}")
-            if r.status_code != 200:
-                log(f"[ERROR] Reset failed: {r.text}")
+            if reset_resp.status_code != 200:
+                log(f"[TASK] ✗ Reset failed: {reset_resp.status_code}")
+                log(f"[TASK] Response: {reset_resp.text[:200]}")
                 log("END")
                 return
+                
+            reset_data = reset_resp.json()
+            observation = reset_data.get("observation", {})
+            log(f"[TASK] ✓ Reset OK - First ticket: {observation.get('ticket_id', 'unknown')}")
             
-            data = r.json()
-        except (requests.exceptions.RequestException, json.JSONDecodeError) as e:
-            log(f"[ERROR] Reset request failed: {e}")
+        except requests.exceptions.Timeout:
+            log(f"[TASK] ✗ Reset timeout after 30s")
             log("END")
             return
-
-        obs = data.get("observation", {})
-        session_id = data.get("session_id")
-        count = 0
+        except requests.exceptions.ConnectionError:
+            log(f"[TASK] ✗ Cannot connect to {TASK_ENDPOINT}")
+            log("END")
+            return
+        except Exception as e:
+            log(f"[TASK] ✗ Reset error: {e}")
+            log("END")
+            return
         
-        # 2. Process Tickets
-        while count < 10:
-            msg = obs.get("customer_message")
-            if not msg:
-                log("[TASK] No more tickets or missing message")
-                break
-                
-            log(f"[TASK] Processing Ticket {count+1}: {msg[:60]}...")
+        # Step 2: Process tickets
+        ticket_count = 0
+        max_tickets = 20
+        done = False
+        
+        while not done and ticket_count < max_tickets:
+            ticket_id = observation.get("ticket_id", "unknown")
+            customer_message = observation.get("customer_message", "")
             
-            # Triage
-            action = analyze_ticket(msg)
+            log(f"\n[TICKET {ticket_count + 1}] ID: {ticket_id}")
+            log(f"[TICKET {ticket_count + 1}] Message: {customer_message[:80]}...")
             
-            # Step
-            step_url = f"{TASK_ENDPOINT}/step"
-            log(f"[TASK] POST {step_url} session_id={session_id}")
+            # Analyze ticket
+            action = analyze_ticket(customer_message)
+            log(f"[TICKET {ticket_count + 1}] Decision: {action['decision']} → {action['team']} ({action['urgency']})")
             
+            # Submit action
             try:
-                r = requests.post(
-                    step_url, 
-                    params={"session_id": session_id}, 
-                    json=action, 
-                    timeout=30
+                step_url = f"{TASK_ENDPOINT}/step"
+                log(f"[TICKET {ticket_count + 1}] Submitting to {step_url}")
+                
+                step_resp = requests.post(
+                    step_url,
+                    json=action,
+                    timeout=30,
+                    headers={"Content-Type": "application/json"}
                 )
-                log("STEP") # Mandatory log
                 
-                if r.status_code != 200:
-                    log(f"[ERROR] Step failed: {r.status_code} - {r.text}")
+                if step_resp.status_code != 200:
+                    log(f"[TICKET {ticket_count + 1}] ✗ Step failed: {step_resp.status_code}")
+                    log(f"[TICKET {ticket_count + 1}] Response: {step_resp.text[:200]}")
                     break
-                    
-                data = r.json()
-            except (requests.exceptions.RequestException, json.JSONDecodeError) as e:
-                log(f"[ERROR] Step request failed: {e}")
-                break
-            
-            count += 1
-            if data.get("done"):
-                log("[TASK] Mission completed successfully")
-                break
                 
-            obs = data.get("observation", {})
-            
+                step_data = step_resp.json()
+                log("STEP")  # REQUIRED by validator
+                
+                # Check score
+                reward = step_data.get("reward", {})
+                score = reward.get("overall_score", 0.0)
+                log(f"[TICKET {ticket_count + 1}] ✓ Score: {score:.2f}")
+                
+                # Check if done
+                done = step_data.get("done", False)
+                if done:
+                    log(f"[TASK] ✓ Completed after {ticket_count + 1} tickets")
+                    break
+                
+                # Get next observation
+                observation = step_data.get("observation", {})
+                ticket_count += 1
+                
+            except requests.exceptions.Timeout:
+                log(f"[TICKET {ticket_count + 1}] ✗ Step timeout")
+                break
+            except requests.exceptions.ConnectionError:
+                log(f"[TICKET {ticket_count + 1}] ✗ Connection error")
+                break
+            except Exception as e:
+                log(f"[TICKET {ticket_count + 1}] ✗ Error: {e}")
+                log(traceback.format_exc())
+                break
+        
+        log(f"[TASK] Finished {difficulty}: {ticket_count} tickets processed")
+        
     except Exception as e:
-        log(f"[CRITICAL] Unexpected error in task loop: {e}")
+        log(f"[TASK] ✗ Fatal error: {e}")
         log(traceback.format_exc())
     
     log("END")
 
+# ==================== MAIN EXECUTION ====================
 def main_execution():
-    log("[SYSTEM] Waiting for server to stabilize...")
-    time.sleep(5)
-    for diff in ["easy", "medium", "hard"]:
-        log(f"[SYSTEM] Starting {diff} mission...")
-        run_task(diff)
-        time.sleep(2)
-    log("[SYSTEM] All missions concluded. Keeping container alive for healthchecks.")
-    while True:
-        time.sleep(60)
+    """Run all difficulty levels."""
+    log("\n[MAIN] ========== STARTING ALL TASKS ==========")
+    
+    try:
+        for difficulty in ["easy", "medium", "hard"]:
+            run_task(difficulty)
+            time.sleep(1)  # Brief pause between levels
+        
+        log("\n[MAIN] ========== ALL TASKS COMPLETE ==========")
+    except Exception as e:
+        log(f"[MAIN] ✗ Critical error: {e}")
+        log(traceback.format_exc())
 
-# --- HEALTHCHECK SERVER ---
-
+# ==================== HEALTHCHECK SERVER ====================
 class HealthCheckHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-        self.wfile.write(b'{"status":"healthy"}')
-
+    """Responds to validator healthcheck probes."""
+    
     def log_message(self, format, *args):
-        # Silence logs to keep stdout clean
-        return
+        """Suppress default HTTP logging."""
+        pass
+    
+    def do_GET(self):
+        """Handle GET requests."""
+        try:
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(b'{"status":"healthy"}')
+        except Exception as e:
+            log(f"[SERVER] ✗ Healthcheck error: {e}")
 
 def run_server():
-    log(f"[SERVER] Starting healthcheck on 0.0.0.0:{PORT}")
+    """Start healthcheck server and execute tasks."""
+    log(f"\n[SERVER] ========== STARTING HEALTHCHECK SERVER ==========")
+    log(f"[SERVER] Listening on 0.0.0.0:{PORT}")
+    
     try:
-        httpd = HTTPServer(('0.0.0.0', PORT), HealthCheckHandler)
+        server_address = ('0.0.0.0', PORT)
+        httpd = HTTPServer(server_address, HealthCheckHandler)
         
-        # START TASK AS DAEMON
-        log("[SERVER] Launching task execution thread")
+        log("[SERVER] ✓ Server ready")
+        log("[SERVER] Starting task execution in background...")
+        
+        # CRITICAL: Run task in daemon thread so server can respond to healthchecks
         task_thread = threading.Thread(target=main_execution, daemon=True)
         task_thread.start()
         
-        # RUN SERVER IN MAIN THREAD
+        log("[SERVER] ✓ Task thread started")
+        log("[SERVER] Serving healthcheck requests...")
+        
+        # Server runs in main thread forever
         httpd.serve_forever()
+        
     except Exception as e:
-        log(f"[FATAL] Server crash: {e}")
+        log(f"[SERVER] ✗ Fatal error: {e}")
         log(traceback.format_exc())
         sys.exit(1)
 
+# ==================== ENTRY POINT ====================
 if __name__ == "__main__":
-    run_server()
+    log("\n" + "="*60)
+    log("SUPPORT TICKET TRIAGE - INFERENCE ENGINE")
+    log("="*60)
+    
+    try:
+        run_server()
+    except KeyboardInterrupt:
+        log("\n[SHUTDOWN] Interrupted by user")
+        sys.exit(0)
+    except Exception as e:
+        log(f"\n[CRITICAL] Unhandled exception: {e}")
+        log(traceback.format_exc())
+        sys.exit(1)
