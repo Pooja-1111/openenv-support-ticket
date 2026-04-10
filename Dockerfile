@@ -1,23 +1,17 @@
-# Use 3.11 to satisfy the requirement mentioned in the logs
+# Use 3.11 as requested by the warnings
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies (curl for healthcheck)
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
-
+# Ensure we have no dependency issues
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy your script
-COPY inference.py .
+COPY . .
 
-# Expose the standard port
+# Expose the ports we are listening on
+EXPOSE 7860
 EXPOSE 8080
 
-# Platform uses this to verify the server is ready
-HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=10 \
-  CMD curl -f http://localhost:8080/ || exit 1
-
-# Standard hackathon entry point
+# Run the script
 CMD ["python", "inference.py"]
