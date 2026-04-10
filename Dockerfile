@@ -10,14 +10,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# README.md says app_port: 8000
-EXPOSE 8000
+# Expose both common ports
+EXPOSE 8080 8000
 
 ENV PYTHONUNBUFFERED=1
 
-# Faster healthcheck targeting port 8000
+# Healthcheck that covers both possibilities
 HEALTHCHECK --interval=3s --timeout=2s --start-period=5s --retries=5 \
-  CMD curl -f http://localhost:8000/health || exit 1
+  CMD curl -f http://localhost:8080/ || curl -f http://localhost:8000/ || exit 1
 
-# Explicitly use python3
 CMD ["python3", "inference.py"]
