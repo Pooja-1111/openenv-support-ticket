@@ -2,21 +2,21 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Install curl for healthcheck and system deps
+# Install curl for HEALTHCHECK
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
-# Install ALL dependencies (root + backend)
 COPY requirements.txt .
-COPY backend/requirements.txt ./backend_requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt -r backend_requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 7860 8080 8000 80 3000
+# Match the app_port in README and the port in inference.py
+EXPOSE 8080
 
 ENV PYTHONUNBUFFERED=1
 
-HEALTHCHECK --interval=5s --timeout=5s --start-period=15s --retries=12 \
-  CMD curl -f http://localhost:8000/ || exit 1
+# Platform uses this to verify the server is ready
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=10 \
+  CMD curl -f http://localhost:8080/health || exit 1
 
 CMD ["python", "inference.py"]
