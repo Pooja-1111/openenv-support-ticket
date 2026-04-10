@@ -10,13 +10,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Expose both common ports
-EXPOSE 8080 8000
+# Multi-port coverage
+EXPOSE 8000 8080 7860
 
 ENV PYTHONUNBUFFERED=1
 
-# Healthcheck that covers both possibilities
+# Universal healthcheck
 HEALTHCHECK --interval=3s --timeout=2s --start-period=5s --retries=5 \
-  CMD curl -f http://localhost:8080/ || curl -f http://localhost:8000/ || exit 1
+  CMD curl -f http://localhost:8000/ || curl -f http://localhost:8080/ || curl -f http://localhost:7860/ || exit 1
 
 CMD ["python3", "inference.py"]
