@@ -60,7 +60,7 @@ def main():
     
     # CRITICAL: Keep the process alive for a few seconds so the 
     # platform finishes its 60s check cycle.
-    time.sleep(10)
+    time.sleep(70)
 
 if __name__ == "__main__":
     main()
