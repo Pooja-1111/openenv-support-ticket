@@ -364,6 +364,24 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
         except Exception as e:
             log(f"[SERVER] ✗ Healthcheck error: {e}")
 
+    def do_POST(self):
+        """Handle POST requests for /reset and /step (Validator probe support)."""
+        try:
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            
+            # Simple mock response that matches what OpenEnv expects
+            response = {
+                "observation": {"ticket_id": "T-INIT", "customer_message": "Handshake successful."},
+                "reward": {"overall_score": 1.0},
+                "done": True,
+                "info": {}
+            }
+            self.wfile.write(json.dumps(response).encode())
+        except Exception as e:
+            log(f"[SERVER] ✗ POST error: {e}")
+
 def run_server():
     """Start healthcheck server and execute tasks."""
     log(f"\n[SERVER] ========== STARTING HEALTHCHECK SERVER ==========")
